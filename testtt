@@ -38,7 +38,7 @@ void loop() {
   // --- Baca Suhu dari DHT11 ---
   float suhu = dht.readTemperature(); // °C
 
-  // Pastikan data valid
+
   if (isnan(suhu)) {
     Serial.println("Gagal baca suhu dari DHT11!");
     return;
