@@ -1,0 +1,69 @@
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+
+// --- Pin Sensor ---
+#define TRIG_PIN 25
+#define ECHO_PIN 26
+#define DHT_PIN  14
+
+// --- Tipe Sensor DHT ---
+#define DHTTYPE DHT11
+
+// --- Inisialisasi Objek ---
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+DHT dht(DHT_PIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+  lcd.init();
+  lcd.backlight();
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  dht.begin();
+}
+
+void loop() {
+  // --- Baca Jarak dari HC-SR04 ---
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  float jarak = duration /58;
+
+  // --- Baca Suhu dari DHT11 ---
+  float suhu = dht.readTemperature(); // °C
+
+  // Pastikan data valid
+  if (isnan(suhu)) {
+    Serial.println("Gagal baca suhu dari DHT11!");
+    return;
+  }
+
+  // --- Tampilkan ke LCD ---
+  lcd.setCursor(0, 0);
+  lcd.print("J:");
+  lcd.print(jarak, 2);  // 2 angka di belakang koma
+  lcd.print(" S:");
+  lcd.print(suhu, 0);   // tanpa desimal
+
+  lcd.setCursor(0, 1);
+  if (jarak > 20) {
+    lcd.print("AMAN           ");
+  } else {
+    lcd.print("AWAS!          ");
+  }
+
+  // --- Debug ke Serial Monitor ---
+  Serial.print("Jarak: ");
+  Serial.print(jarak);
+  Serial.print(" cm  |  Suhu: ");
+  Serial.print(suhu);
+  Serial.println(" *C");
+
+  delay(1000);
+}
